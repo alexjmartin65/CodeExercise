@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace CodeApplication
+namespace Solution
 {
     public class Solution
     {
@@ -84,14 +84,14 @@ namespace CodeApplication
             {
                 if (distances.ContainsKey(city.CityName) == false)
                 {
-                    distances[city.CityName] = -1;
+                    distances[city.CityName] = Constants.ORPHANED_DISTANCE;
                 }
             }
 
             foreach (var distance in distances.OrderByDescending(d => d.Value).ThenBy(d => d.Key))
             {
                 var currentCity = Cities.First(city => city.CityName == distance.Key);
-                shortestDistances.Add(($"{distance.Value} {currentCity.CityName}, {currentCity.State}"));
+                shortestDistances.Add(currentCity.GetCityDistanceString(distance.Value));
             }
 
             return shortestDistances;
@@ -101,6 +101,10 @@ namespace CodeApplication
 
     public class City
     {
+        public City()
+        {
+
+        }
 
         public City(string cityString)
         {
@@ -128,6 +132,11 @@ namespace CodeApplication
 
         public List<string> Interstates { get; set; }
 
+        public string GetCityDistanceString(int distance)
+        {
+            return $"{distance} {CityName}, {State}";
+        }
+
     }
 
     public static class Constants
@@ -145,8 +154,404 @@ namespace CodeApplication
 
         public const int INTERSTATE_EDGE_LENGTH = 1;
 
+        public const int ORPHANED_DISTANCE = -1;
+
+    }
+
+    [TestClass]
+    public class GraphTest
+    {
+
+        [TestMethod]
+        public void StraightLineGraph()
+        {
+            var cities = new List<City>();
+            cities.Add(new City()
+            {
+                CityName = Constants.STARTING_CITY_NAME,
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "First",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "2"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Second",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "2",
+                    "3"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Third",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "3",
+                    "4"
+                }
+            });
+
+            var graph = new Graph(cities);
+            var distances = graph.GetShortestDistances();
+
+            Assert.AreEqual(cities[3].GetCityDistanceString(3), distances[0]);
+            Assert.AreEqual(cities[2].GetCityDistanceString(2), distances[1]);
+            Assert.AreEqual(cities[1].GetCityDistanceString(1), distances[2]);
+            Assert.AreEqual(cities[0].GetCityDistanceString(0), distances[3]);
+        }
+
+        [TestMethod]
+        public void GraphWithOrphans()
+        {
+            var cities = new List<City>();
+            cities.Add(new City()
+            {
+                CityName = Constants.STARTING_CITY_NAME,
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "First",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "2"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Second",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "2",
+                    "3"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Third",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "5"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Fourth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "6"
+                }
+            });
+
+            var graph = new Graph(cities);
+            var distances = graph.GetShortestDistances();
+
+            
+            Assert.AreEqual(cities[2].GetCityDistanceString(2), distances[0]);
+            Assert.AreEqual(cities[1].GetCityDistanceString(1), distances[1]);
+            Assert.AreEqual(cities[0].GetCityDistanceString(0), distances[2]);
+            Assert.AreEqual(cities[4].GetCityDistanceString(Constants.ORPHANED_DISTANCE), distances[3]);
+            Assert.AreEqual(cities[3].GetCityDistanceString(Constants.ORPHANED_DISTANCE), distances[4]);
+        }
+
+        [TestMethod]
+        public void MultipleConnectionsGraph()
+        {
+            var cities = new List<City>();
+            cities.Add(new City()
+            {
+                CityName = Constants.STARTING_CITY_NAME,
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "2",
+                    "10"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "First",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "3",
+                    "4"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Second",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "2",
+                    "3"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Third",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "4",
+                    "6"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Fourth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "7"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Fifth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "6",
+                    "7",
+                    "8"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Sixth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "8",
+                    "9"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Seventh",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "9",
+                    "10",
+                }
+            });
+
+
+            var graph = new Graph(cities);
+            var distances = graph.GetShortestDistances();
+
+            Assert.AreEqual(cities[4].GetCityDistanceString(4), distances[0]);
+            Assert.AreEqual(cities[5].GetCityDistanceString(3), distances[1]);
+            Assert.AreEqual(cities[6].GetCityDistanceString(2), distances[2]);
+            Assert.AreEqual(cities[3].GetCityDistanceString(2), distances[3]);
+            Assert.AreEqual(cities[1].GetCityDistanceString(1), distances[4]);
+            Assert.AreEqual(cities[2].GetCityDistanceString(1), distances[5]);
+            Assert.AreEqual(cities[7].GetCityDistanceString(1), distances[6]);
+            Assert.AreEqual(cities[0].GetCityDistanceString(0), distances[7]);
+        }
+
+        [TestMethod]
+        public void MultipleConnectionsGraphWithOrphans()
+        {
+            var cities = new List<City>();
+            cities.Add(new City()
+            {
+                CityName = Constants.STARTING_CITY_NAME,
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "2",
+                    "10"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "First",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "1",
+                    "3",
+                    "4"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Second",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "2",
+                    "3"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Third",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "4",
+                    "6"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Fourth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "7"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Fifth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "6",
+                    "7",
+                    "8"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Sixth",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "8",
+                    "9"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Seventh",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "9",
+                    "10",
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Eight",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "12"
+                }
+            });
+
+            cities.Add(new City()
+            {
+                CityName = "Nine",
+                State = "IL",
+                Population = 10,
+                Interstates = new List<string>()
+                {
+                    "12"
+                }
+            });
+
+
+            var graph = new Graph(cities);
+            var distances = graph.GetShortestDistances();
+
+            Assert.AreEqual(cities[4].GetCityDistanceString(4), distances[0]);
+            Assert.AreEqual(cities[5].GetCityDistanceString(3), distances[1]);
+            Assert.AreEqual(cities[6].GetCityDistanceString(2), distances[2]);
+            Assert.AreEqual(cities[3].GetCityDistanceString(2), distances[3]);
+            Assert.AreEqual(cities[1].GetCityDistanceString(1), distances[4]);
+            Assert.AreEqual(cities[2].GetCityDistanceString(1), distances[5]);
+            Assert.AreEqual(cities[7].GetCityDistanceString(1), distances[6]);
+            Assert.AreEqual(cities[0].GetCityDistanceString(0), distances[7]);
+            Assert.AreEqual(cities[8].GetCityDistanceString(Constants.ORPHANED_DISTANCE), distances[8]);
+            Assert.AreEqual(cities[9].GetCityDistanceString(Constants.ORPHANED_DISTANCE), distances[9]);
+        }
+
     }
 
 }
 
-//public class 
+

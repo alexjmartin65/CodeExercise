@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+/*
+ * NOTE: ADDED UNIT TESTS, BUT CAN'T COMPILE SO THEY ARE COMMENTED OUT
+ */
+//using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Solution
 {
@@ -158,6 +161,9 @@ namespace Solution
 
     }
 
+    /*
+     * NOTE: ADDED UNIT TESTS, BUT CAN'T COMPILE SO THEY ARE COMMENTED OUT
+     * 
     [TestClass]
     public class GraphTest
     {
@@ -286,7 +292,7 @@ namespace Solution
             var graph = new Graph(cities);
             var distances = graph.GetShortestDistances();
 
-            
+
             Assert.AreEqual(cities[2].GetCityDistanceString(2), distances[0]);
             Assert.AreEqual(cities[1].GetCityDistanceString(1), distances[1]);
             Assert.AreEqual(cities[0].GetCityDistanceString(0), distances[2]);
@@ -551,6 +557,8 @@ namespace Solution
         }
 
     }
+     */
+
 
 }
 
